@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>DAVID AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#04040a;--y:#FFD600;--y2:#FFA500;--yd:#b89a00;--g:#00ff88;--b:#00d4ff;--pu:#c084fc;--r:#ff4455;--text:#f0f0f0;--muted:#3a3a4a;--card:rgba(5,5,16,.97);--bf:rgba(255,214,0,.07);}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;min-height:100%;background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;overflow-x:hidden;}
+::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-thumb{background:rgba(255,214,0,.2);border-radius:3px;}
+#bgc{position:fixed;inset:0;z-index:0;pointer-events:none;}
+.gorb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(120px);}
+.gorb.a{width:750px;height:750px;background:radial-gradient(circle,rgba(255,214,0,.055),transparent 65%);top:-280px;left:-200px;animation:gorb 18s ease-in-out infinite;}
+.gorb.b{width:600px;height:600px;background:radial-gradient(circle,rgba(255,100,0,.04),transparent 65%);bottom:-230px;right:-170px;animation:gorb 22s ease-in-out infinite reverse;}
+.gorb.c{width:400px;height:400px;background:radial-gradient(circle,rgba(255,214,0,.03),transparent 65%);top:40%;left:55%;transform:translate(-50%,-50%);animation:gorb 15s ease-in-out infinite 4s;}
+@keyframes gorb{0%,100%{transform:scale(1)translate(0,0);}40%{transform:scale(1.12)translate(30px,22px);}70%{transform:scale(.9)translate(-22px,38px);}}
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,14,.065) 2px,rgba(0,0,14,.065) 4px);}
+#ai{min-height:100vh;display:flex;flex-direction:column;position:relative;z-index:1;}
+/* HEADER */
+.hdr{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:13px 26px;border-bottom:1px solid var(--bf);background:rgba(3,3,10,.98);position:sticky;top:0;z-index:100;backdrop-filter:blur(26px);}
+.hdr::after{content:'';position:absolute;bottom:0;left:4%;right:4%;height:1px;background:linear-gradient(90deg,transparent,rgba(255,214,0,.38),transparent);}
+.hdr-left{display:flex;flex-direction:column;gap:2px;}
+.hdr-title{font-family:'Orbitron',monospace;font-size:.95rem;color:var(--y);letter-spacing:.18em;text-shadow:0 0 22px rgba(255,214,0,.55);animation:hbr 4s ease-in-out infinite;}
+@keyframes hbr{0%,100%{text-shadow:0 0 22px rgba(255,214,0,.55);}50%{text-shadow:0 0 42px rgba(255,214,0,.9),0 0 70px rgba(255,214,0,.3);}}
+.hdr-nick{font-family:'Share Tech Mono',monospace;font-size:.66rem;color:rgba(255,214,0,.42);letter-spacing:.07em;}
+.hdr-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.livdot{width:8px;height:8px;border-radius:50%;background:var(--g);box-shadow:0 0 9px var(--g);animation:dblink 2s ease-in-out infinite;flex-shrink:0;}
+@keyframes dblink{0%,100%{opacity:1;}50%{opacity:.28;}}
+.hbtn{padding:6px 13px;border-radius:8px;cursor:pointer;font-size:.62rem;font-family:'Share Tech Mono',monospace;letter-spacing:.04em;transition:all .22s;border:1px solid;}
+.hbtn.out{background:rgba(255,50,50,.05);border-color:rgba(255,50,50,.2);color:var(--r);}.hbtn.out:hover{background:rgba(255,50,50,.15);}
+/* WELCOME BACK BADGE — only shows after returning from nav */
+.wb-badge{display:none;align-items:center;gap:6px;background:rgba(0,255,136,.07);border:1px solid rgba(0,255,136,.22);border-radius:14px;padding:4px 12px;font-family:'Share Tech Mono',monospace;font-size:.6rem;color:rgba(0,255,136,.75);animation:bpop .4s cubic-bezier(.34,1.56,.64,1);}
+.wb-badge.show{display:flex;}
+@keyframes bpop{from{opacity:0;transform:scale(.8);}to{opacity:1;transform:scale(1);}}
+.wbdot{width:6px;height:6px;border-radius:50%;background:var(--g);animation:dblink 1.8s ease-in-out infinite;}
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;align-items:center;padding:28px 18px 170px;max-width:740px;margin:0 auto;width:100%;}
+.main>*{animation:elin .45s ease both;}
+.main>*:nth-child(1){animation-delay:.05s;}.main>*:nth-child(2){animation-delay:.1s;}.main>*:nth-child(3){animation-delay:.16s;}.main>*:nth-child(4){animation-delay:.22s;}.main>*:nth-child(5){animation-delay:.28s;}.main>*:nth-child(6){animation-delay:.34s;}.main>*:nth-child(7){animation-delay:.4s;}
+@keyframes elin{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:none;}}
+/* ORB + BARS — hidden in subtitle-only mode */
+.orb-wrap{display:flex;flex-direction:column;align-items:center;margin-bottom:10px;}
+.orb-wrap.sub-hidden,.vbars.sub-hidden{display:none!important;}
+.orbc{width:200px;height:200px;position:relative;display:flex;align-items:center;justify-content:center;margin-bottom:14px;}
+.orbc::before{content:'';position:absolute;inset:-20px;border-radius:50%;background:conic-gradient(from 0deg,transparent 30%,rgba(255,214,0,.09) 50%,transparent 70%);animation:hspin 6s linear infinite;}
+@keyframes hspin{to{transform:rotate(360deg);}}
+.orbr{position:absolute;border-radius:50%;border:1px solid rgba(255,214,0,.15);animation:rpulse 2.6s ease-in-out infinite;}
+.orbr:nth-child(2){width:200px;height:200px;}.orbr:nth-child(3){width:155px;height:155px;animation-delay:.5s;border-color:rgba(255,214,0,.1);}.orbr:nth-child(4){width:116px;height:116px;animation-delay:1s;border-color:rgba(255,214,0,.2);}
+@keyframes rpulse{0%,100%{transform:scale(1);opacity:.1;}50%{transform:scale(1.07);opacity:.38;}}
+.orb-core{width:80px;height:80px;border-radius:50%;z-index:2;position:relative;background:radial-gradient(circle at 32% 30%,#fff8cc,#FFD600 40%,#7a4d00);box-shadow:0 0 35px rgba(255,214,0,.6),0 0 70px rgba(255,214,0,.25),0 0 8px rgba(255,255,200,.5) inset;}
+.orb-core::after{content:'';position:absolute;top:11%;left:17%;width:30%;height:23%;border-radius:50%;background:rgba(255,255,255,.5);filter:blur(5px);}
+.vbars{display:flex;gap:5px;align-items:center;justify-content:center;height:46px;margin-bottom:8px;}
+.vb{width:5px;border-radius:4px;background:linear-gradient(to top,rgba(255,140,0,.85),var(--y));animation:bidle 1.9s ease-in-out infinite;min-height:4px;}
+.vb:nth-child(1){height:8px;}.vb:nth-child(2){height:18px;animation-delay:.14s;}.vb:nth-child(3){height:34px;animation-delay:.28s;}.vb:nth-child(4){height:22px;animation-delay:.42s;}.vb:nth-child(5){height:12px;animation-delay:.56s;}.vb:nth-child(6){height:28px;animation-delay:.7s;}.vb:nth-child(7){height:16px;animation-delay:.84s;}.vb:nth-child(8){height:9px;animation-delay:.98s;}
+@keyframes bidle{0%,100%{transform:scaleY(1);opacity:.45;}50%{transform:scaleY(1.65);opacity:1;}}
+/* SUB BADGE — shown in subtitle-only mode */
+.sub-badge{display:none;align-items:center;gap:8px;border:1px solid rgba(255,214,0,.18);border-radius:20px;padding:6px 16px;background:rgba(255,214,0,.04);font-family:'Share Tech Mono',monospace;font-size:.63rem;color:var(--yd);letter-spacing:.05em;margin-bottom:12px;}
+.sub-badge.show{display:flex;}
+.sbdot{width:7px;height:7px;border-radius:50%;background:var(--y);box-shadow:0 0 6px var(--y);animation:dblink 1.8s ease-in-out infinite;}
+/* SUBTITLE DISPLAY */
+.subdiv{max-width:680px;width:100%;text-align:center;min-height:50px;margin-bottom:18px;padding:0 10px;}
+.subdiv.sub-mode{background:rgba(255,214,0,.025);border:1px solid rgba(255,214,0,.12);border-radius:13px;padding:16px 20px;min-height:68px;position:relative;}
+.subdiv.sub-mode::before{content:'';position:absolute;top:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,rgba(255,214,0,.3),transparent);}
+.sw{display:inline-block;font-size:1.05rem;font-weight:600;color:var(--y);margin:0 2px;opacity:0;animation:win .28s ease forwards;text-shadow:0 0 14px rgba(255,214,0,.55);}
+.subdiv.sub-mode .sw{font-size:1.12rem;}
+@keyframes win{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+/* PATHWAYS */
+.pathways{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;max-width:700px;width:100%;margin-bottom:18px;}
+.pbox{display:flex;align-items:center;gap:10px;background:rgba(255,214,0,.04);border:1px solid rgba(255,214,0,.18);border-radius:13px;padding:12px 22px;cursor:pointer;text-decoration:none;font-family:'Share Tech Mono',monospace;font-size:.72rem;color:var(--y);position:relative;overflow:hidden;transition:transform .22s,box-shadow .22s,background .22s;animation:pbr 3.5s ease-in-out infinite;}
+.pbox:nth-child(2){animation-delay:.8s;}.pbox:nth-child(3){animation-delay:1.6s;}
+@keyframes pbr{0%,100%{border-color:rgba(255,214,0,.18);}50%{box-shadow:0 0 24px rgba(255,214,0,.22);border-color:rgba(255,214,0,.52);}}
+.pbox::after{content:'';position:absolute;top:0;left:-130%;width:50%;height:100%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.12),transparent);animation:pbsw 3.5s linear infinite;}
+.pbox:nth-child(2)::after{animation-delay:.8s;}.pbox:nth-child(3)::after{animation-delay:1.6s;}
+@keyframes pbsw{0%{left:-130%;}45%,100%{left:150%;}}
+.pbox:hover{background:rgba(255,214,0,.11);border-color:var(--y);transform:translateY(-5px) scale(1.03);box-shadow:0 10px 38px rgba(255,214,0,.3);animation:none;}
+.pbox-ico{font-size:1.4rem;flex-shrink:0;filter:drop-shadow(0 0 6px rgba(255,214,0,.45));}
+.pbox-name{font-weight:700;letter-spacing:.08em;font-size:.75rem;}
+.pbox-sub{font-size:.56rem;color:rgba(255,214,0,.36);margin-top:2px;}
+/* TOOLS */
+.tools{max-width:700px;width:100%;margin-bottom:14px;}
+.trow{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;}
+.tc{background:rgba(255,214,0,.05);border:1px solid rgba(255,214,0,.15);border-radius:22px;padding:7px 18px;font-size:.73rem;cursor:pointer;color:var(--y);font-family:'Share Tech Mono',monospace;transition:all .22s;letter-spacing:.04em;}
+.tc:hover{background:rgba(255,214,0,.16);border-color:rgba(255,214,0,.6);transform:translateY(-2px);box-shadow:0 4px 16px rgba(255,214,0,.15);}
+/* CARDS */
+.card{max-width:700px;width:100%;margin-bottom:14px;background:var(--card);border:1px solid var(--bf);border-radius:15px;padding:22px 26px;display:none;position:relative;overflow:hidden;animation:capp .3s ease;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,214,0,.38),transparent);}
+.card.show{display:block;}.card.wflex.show{display:flex;align-items:center;gap:22px;flex-wrap:wrap;}
+@keyframes capp{from{opacity:0;transform:translateY(-12px);}to{opacity:1;transform:none;}}
+/* WEATHER */
+.wi2{font-size:3.4rem;filter:drop-shadow(0 0 14px rgba(255,214,0,.3));}
+.winfo .wc{font-family:'Orbitron',monospace;color:var(--y);font-size:.82rem;letter-spacing:.07em;}
+.winfo .wt{font-size:2.5rem;font-weight:700;line-height:1.1;}
+.winfo .wd{color:var(--muted);font-size:.77rem;margin-top:4px;}
+.tdisp{font-family:'Share Tech Mono',monospace;font-size:1.6rem;color:var(--y);text-shadow:0 0 14px rgba(255,214,0,.4);margin-left:auto;}
+/* TIME CARD */
+.big-clock{font-family:'Orbitron',monospace;font-size:3rem;color:var(--y);text-shadow:0 0 32px rgba(255,214,0,.5);letter-spacing:.08em;text-align:center;margin-bottom:4px;}
+.big-date{font-family:'Share Tech Mono',monospace;font-size:.72rem;color:var(--muted);text-align:center;letter-spacing:.06em;margin-bottom:18px;}
+.alarm-section{border-top:1px solid rgba(255,214,0,.1);padding-top:16px;}
+.alarm-title{font-family:'Orbitron',monospace;font-size:.7rem;color:var(--y);letter-spacing:.1em;margin-bottom:12px;}
+.alarm-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+.ainp{background:rgba(255,255,255,.04);border:1px solid rgba(255,214,0,.2);border-radius:8px;padding:8px 12px;color:var(--y);font-family:'Orbitron',monospace;font-size:1rem;outline:none;width:130px;}
+.ainp:focus{border-color:rgba(255,214,0,.5);}
+.alinp{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.85rem;outline:none;flex:1;min-width:110px;}
+.alinp:focus{border-color:rgba(255,214,0,.35);}
+.abtn{padding:8px 16px;border-radius:8px;cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:.65rem;border:1px solid;transition:all .2s;}
+.abtn.set{background:rgba(255,214,0,.1);border-color:rgba(255,214,0,.35);color:var(--y);}.abtn.set:hover{background:rgba(255,214,0,.22);}
+.abtn.up{background:rgba(0,212,255,.07);border-color:rgba(0,212,255,.25);color:var(--b);}.abtn.up:hover{background:rgba(0,212,255,.16);}
+.abtn.rm{background:rgba(255,50,50,.07);border-color:rgba(255,50,50,.22);color:var(--r);}.abtn.rm:hover{background:rgba(255,50,50,.16);}
+.sound-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+.sound-lbl{font-family:'Share Tech Mono',monospace;font-size:.63rem;color:var(--muted);}
+.sound-name{font-family:'Share Tech Mono',monospace;font-size:.63rem;color:rgba(0,212,255,.7);}
+.alarm-list{display:flex;flex-direction:column;gap:7px;max-height:200px;overflow-y:auto;}
+.alarm-item{display:flex;align-items:center;justify-content:space-between;background:rgba(255,214,0,.04);border:1px solid rgba(255,214,0,.1);border-radius:9px;padding:9px 13px;gap:8px;flex-wrap:wrap;}
+.alarm-item.ringing{border-color:var(--y);background:rgba(255,214,0,.13);animation:rflash .5s ease-in-out infinite alternate;}
+@keyframes rflash{from{box-shadow:0 0 0 rgba(255,214,0,0);}to{box-shadow:0 0 20px rgba(255,214,0,.5);}}
+.ai-time{font-family:'Orbitron',monospace;font-size:.88rem;color:var(--y);}
+.ai-lbl{font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--muted);flex:1;}
+.ai-st{font-size:.6rem;font-family:'Share Tech Mono',monospace;padding:2px 8px;border-radius:6px;}
+.ai-st.on{background:rgba(0,255,136,.1);color:var(--g);border:1px solid rgba(0,255,136,.25);}
+.ai-st.off{background:rgba(255,255,255,.04);color:var(--muted);}
+/* PWA */
+.ptitle{font-family:'Orbitron',monospace;color:var(--y);font-size:.83rem;letter-spacing:.09em;margin-bottom:14px;}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.f{margin-bottom:12px;}
+.f label{display:block;font-size:.68rem;color:var(--yd);letter-spacing:.11em;margin-bottom:5px;font-family:'Share Tech Mono',monospace;}
+.f input,.f textarea,.f select{width:100%;background:rgba(255,255,255,.03);border:1px solid rgba(255,214,0,.14);border-radius:9px;padding:10px 13px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.9rem;outline:none;transition:all .2s;}
+.f input:focus,.f textarea:focus,.f select:focus{border-color:var(--y);}
+.f textarea{resize:vertical;min-height:60px;}
+.bgen{width:100%;margin-top:12px;padding:12px;background:linear-gradient(135deg,var(--y),var(--y2));border:none;border-radius:9px;color:#000;font-family:'Orbitron',monospace;font-size:.77rem;font-weight:700;letter-spacing:.09em;cursor:pointer;transition:opacity .2s;}
+.bgen:hover{opacity:.85;}
+.pout{margin-top:12px;background:rgba(0,0,0,.5);border:1px solid rgba(255,214,0,.08);border-radius:9px;padding:12px;font-family:'Share Tech Mono',monospace;font-size:.65rem;color:#999;max-height:200px;overflow-y:auto;white-space:pre;display:none;}
+/* CHAT */
+.chatbox{max-width:700px;width:100%;background:var(--card);border:1px solid var(--bf);border-radius:15px;padding:20px;min-height:180px;max-height:360px;overflow-y:auto;margin-bottom:14px;position:relative;}
+.chatbox::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,214,0,.28),transparent);}
+.cm{margin-bottom:14px;animation:msgin .24s ease;}
+@keyframes msgin{from{opacity:0;transform:translateY(7px);}to{opacity:1;transform:none;}}
+.cm .cl{font-size:.63rem;font-family:'Share Tech Mono',monospace;margin-bottom:5px;letter-spacing:.05em;}
+.cm.david .cl{color:var(--y);}
+.cm.user .cl{color:var(--muted);text-align:right;}
+.cm.david .ct{display:inline-block;max-width:90%;color:#ffe98a;font-size:.92rem;line-height:1.7;padding:12px 16px;background:rgba(255,214,0,.04);border-left:2px solid rgba(255,214,0,.38);border-radius:0 12px 12px 0;}
+.cm.user{text-align:right;overflow:hidden;}
+.cm.user .ct{display:inline-block;max-width:90%;color:#e8e8f0;font-size:.92rem;line-height:1.7;padding:12px 16px;background:rgba(255,255,255,.04);border-right:2px solid rgba(255,255,255,.14);border-radius:12px 0 0 12px;float:right;clear:both;}
+.cm .ct img{max-width:230px;border-radius:9px;margin-top:7px;display:block;}
+.cm .ct video{max-width:270px;border-radius:9px;margin-top:7px;display:block;}
+.tdot{display:inline-block;width:7px;height:7px;background:var(--y);border-radius:50%;margin:0 2px;animation:tdot .8s ease-in-out infinite;}
+.tdot:nth-child(2){animation-delay:.16s;}.tdot:nth-child(3){animation-delay:.32s;}
+@keyframes tdot{0%,60%,100%{transform:translateY(0);opacity:.4;}30%{transform:translateY(-6px);opacity:1;}}
+/* MR X */
+.mrx{max-width:700px;width:100%;margin-bottom:18px;background:rgba(4,4,12,.97);border:1px solid rgba(255,214,0,.13);border-radius:16px;padding:22px 26px;position:relative;overflow:hidden;cursor:pointer;transition:border-color .3s;}
+.mrx::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,214,0,.5),transparent);}
+.mrx:hover{border-color:rgba(255,214,0,.3);}
+.bk{position:absolute;width:14px;height:14px;border-color:rgba(255,214,0,.3);}
+.bk.tl{top:10px;left:10px;border-top:1px solid;border-left:1px solid;}.bk.tr{top:10px;right:10px;border-top:1px solid;border-right:1px solid;}
+.bk.bl{bottom:10px;left:10px;border-bottom:1px solid;border-left:1px solid;}.bk.br{bottom:10px;right:10px;border-bottom:1px solid;border-right:1px solid;}
+.mrx-shine{position:absolute;top:0;left:-120%;width:50%;height:100%;background:linear-gradient(105deg,transparent,rgba(255,214,0,.06),transparent);transition:left .5s;}
+.mrx:hover .mrx-shine{left:150%;}
+.mrx-sub{font-family:'Share Tech Mono',monospace;font-size:.63rem;color:var(--muted);letter-spacing:.07em;margin-bottom:16px;}
+.mrx-red{display:inline-block;background:rgba(255,214,0,.08);border:1px solid rgba(255,214,0,.18);border-radius:4px;padding:1px 8px;font-family:'Share Tech Mono',monospace;font-size:.72rem;color:rgba(255,214,0,.5);animation:redactblink 3s ease-in-out infinite;}
+@keyframes redactblink{0%,90%,100%{opacity:1;}95%{opacity:.3;}}
+.mrx-body{font-size:.83rem;color:rgba(240,230,200,.72);line-height:1.8;}
+.mrx-body p{margin-bottom:10px;}.mrx-body p:last-child{margin-bottom:0;}
+.mrx-opening{font-size:1.05rem;font-weight:600;color:rgba(255,214,0,.92);line-height:1.55;margin-bottom:16px;}
+.mrx-quote{display:block;margin:8px 0 5px 12px;color:rgba(255,214,0,.55);font-size:.86rem;line-height:1.6;border-left:2px solid rgba(255,214,0,.18);padding-left:12px;}
+.mrx-footer{margin-top:18px;padding-top:12px;border-top:1px solid rgba(255,214,0,.07);display:flex;justify-content:flex-end;}
+.mrx-sig{font-size:.9rem;font-style:italic;color:var(--y);}
+/* INPUT BAR */
+.inpzone{max-width:700px;width:100%;display:flex;gap:9px;align-items:flex-end;position:fixed;bottom:0;left:50%;transform:translateX(-50%);padding:14px 18px 18px;background:rgba(3,3,10,.98);border-top:1px solid var(--bf);z-index:50;backdrop-filter:blur(26px);}
+.inpzone::before{content:'';position:absolute;top:0;left:8%;right:8%;height:1px;background:linear-gradient(90deg,transparent,rgba(255,214,0,.28),transparent);}
+.inpzone textarea{flex:1;background:rgba(255,255,255,.03);border:1px solid rgba(255,214,0,.16);border-radius:12px;padding:12px 15px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.93rem;resize:none;height:48px;outline:none;transition:border-color .22s;line-height:1.5;}
+.inpzone textarea:focus{border-color:rgba(255,214,0,.55);box-shadow:0 0 0 3px rgba(255,214,0,.07);}
+.ibtn{border:none;border-radius:12px;width:48px;height:48px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.05rem;flex-shrink:0;transition:all .18s;}
+.ibtn.send{background:linear-gradient(135deg,var(--y),var(--y2));color:#000;font-size:1.1rem;box-shadow:0 0 18px rgba(255,214,0,.35);}
+.ibtn.send:hover{transform:scale(1.08);box-shadow:0 0 34px rgba(255,214,0,.65);}
+.ibtn.mic{background:rgba(255,214,0,.06);border:1px solid rgba(255,214,0,.18);color:var(--y);}
+.ibtn.mic:hover,.ibtn.mic.on{background:rgba(255,214,0,.18);border-color:var(--y);}
+/* MODAL */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.84);z-index:300;align-items:center;justify-content:center;backdrop-filter:blur(12px);}
+.modal.show{display:flex;}
+.mbox{background:#05050f;border:1px solid rgba(255,214,0,.18);border-radius:18px;padding:28px;max-width:400px;width:93%;animation:mpop .3s cubic-bezier(.34,1.56,.64,1);position:relative;overflow:hidden;}
+.mbox::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,214,0,.5),transparent);}
+@keyframes mpop{from{opacity:0;transform:scale(.88);}to{opacity:1;transform:scale(1);}}
+.mtitle{font-family:'Orbitron',monospace;color:var(--y);font-size:.88rem;letter-spacing:.1em;margin-bottom:14px;}
+.mclose{float:right;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;}
+.mclose:hover{color:var(--y);}
+.scgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:9px;}
+.sci2{background:rgba(255,214,0,.04);border:1px solid rgba(255,214,0,.11);border-radius:10px;padding:13px;cursor:pointer;transition:all .22s;text-align:center;}
+.sci2:hover{background:rgba(255,214,0,.1);border-color:rgba(255,214,0,.4);transform:translateY(-2px);}
+.sci2 .icon{font-size:1.5rem;margin-bottom:4px;}
+.sci2 .lbl{font-size:.65rem;color:var(--y);font-family:'Share Tech Mono',monospace;letter-spacing:.04em;}
+#scres{margin-top:10px;font-size:.73rem;color:var(--yd);font-family:'Share Tech Mono',monospace;line-height:1.65;min-height:18px;}
+@media(max-width:580px){.pgrid{grid-template-columns:1fr;}.scgrid{grid-template-columns:1fr;}.hdr-title{font-size:.82rem;}.orbc{width:155px;height:155px;}.orb-core{width:62px;height:62px;}.big-clock{font-size:2.2rem;}}
+</style>
+</head>
+<body>
+<canvas id="bgc"></canvas>
+<div class="gorb a"></div><div class="gorb b"></div><div class="gorb c"></div>
+<div id="ai">
+
+<div class="hdr">
+  <div class="hdr-left">
+    <div class="hdr-title">⬡ DAVID AI</div>
+    <div class="hdr-nick" id="hdrnick">—</div>
+  </div>
+  <div class="hdr-right">
+    <div class="livdot"></div>
+    <div class="wb-badge" id="wb-badge"><span class="wbdot"></span><span id="wb-text">Welcome back</span></div>
+    <button class="hbtn out" onclick="logout()">⬡ Switch User</button>
+  </div>
+</div>
+
+<div class="main" id="main">
+  <!-- ORB (hidden if subtitle-only) -->
+  <div class="orb-wrap" id="orb-wrap">
+    <div class="orbc"><div class="orbr"></div><div class="orbr"></div><div class="orbr"></div><div class="orb-core" id="orb"></div></div>
+    <div class="vbars" id="vbars"><div class="vb"></div><div class="vb"></div><div class="vb"></div><div class="vb"></div><div class="vb"></div><div class="vb"></div><div class="vb"></div><div class="vb"></div></div>
+  </div>
+  <!-- Sub-only badge -->
+  <div class="sub-badge" id="sub-badge"><span class="sbdot"></span>📝 SUBTITLE MODE — TEXT ONLY</div>
+  <!-- Subtitle display -->
+  <div class="subdiv" id="subdiv"></div>
+
+  <!-- PATHWAY BOXES -->
+  <div class="pathways">
+    <a class="pbox" href="david-games.html" onclick="logNav('David Games')">
+      <span class="pbox-ico">🎮</span>
+      <div><div class="pbox-name">GAMES</div><div class="pbox-sub">david-games.html</div></div>
+    </a>
+    <a class="pbox" href="david-projects.html" onclick="logNav('David Projects')">
+      <span class="pbox-ico">📦</span>
+      <div><div class="pbox-name">PROJECTS</div><div class="pbox-sub">david-projects.html</div></div>
+    </a>
+    <a class="pbox" href="universe.html" onclick="logNav('David Universe')">
+      <span class="pbox-ico">🌌</span>
+      <div><div class="pbox-name">DAVID UNIVERSE</div><div class="pbox-sub">universe.html</div></div>
+    </a>
+  </div>
+
+  <!-- MR X -->
+  <div class="mrx">
+    <div class="bk tl"></div><div class="bk tr"></div><div class="bk bl"></div><div class="bk br"></div>
+    <div class="mrx-shine"></div>
+    <div class="mrx-sub">IDENTITY: <span class="mrx-red">██████████</span> &nbsp;·&nbsp; CLASSIFIED</div>
+    <div class="mrx-body">
+      <p class="mrx-opening">You noticed this for a reason.<br>Most people wouldn't.</p>
+      <p>There is a person behind DAVID AI. Not a company. Not a team. One individual — known only as <strong style="color:rgba(255,214,0,.75);">Mr X</strong>. He built everything you are using right now. Alone. In silence. Without asking for recognition.</p>
+      <p>Nobody knows his real name. Nobody has seen his face. He has never done an interview, never posted a photo. The only thing he has ever released is his work — and this is it.</p>
+      <p>He once left a single line behind: <em class="mrx-quote">"I built what I needed. I hope you needed it too."</em></p>
+    </div>
+    <div class="mrx-footer"><span class="mrx-sig"><em>— Mr X</em></span></div>
+  </div>
+
+  <!-- TOOL CHIPS -->
+  <div class="tools"><div class="trow">
+    <span class="tc" onclick="openTool('pwa')">📱 PWA Generator</span>
+    <span class="tc" onclick="openTool('weather')">🌤️ Weather</span>
+    <span class="tc" onclick="openTool('time')">🕐 Time &amp; Alarms</span>
+    <span class="tc" onclick="document.getElementById('chatbox').scrollIntoView({behavior:'smooth'})">💬 Chat</span>
+  </div></div>
+
+  <!-- PWA CARD -->
+  <div class="card" id="pwa-panel">
+    <div class="ptitle">📱 PWA APP GENERATOR</div>
+    <div class="pgrid">
+      <div class="f"><label>APP NAME</label><input type="text" id="pn" placeholder="My App"></div>
+      <div class="f"><label>SHORT NAME</label><input type="text" id="ps" placeholder="App"></div>
+      <div class="f"><label>THEME COLOR</label><input type="color" id="pc" value="#FFD600"></div>
+      <div class="f"><label>DESCRIPTION</label><input type="text" id="pd" placeholder="A cool app"></div>
+    </div>
+    <div class="f" style="margin-top:6px;grid-column:1/-1;"><label>APP PURPOSE / FEATURES</label><textarea id="pp" placeholder="Describe what your app should do..."></textarea></div>
+    <button class="bgen" onclick="genPWA()">⚡ GENERATE PWA CODE</button>
+    <pre class="pout" id="pout"></pre>
+    <div id="pdl" style="display:none;margin-top:10px;text-align:center;"><button class="bgen" style="width:auto;padding:10px 24px;" onclick="dlPWA()">⬇ Download ZIP</button></div>
+  </div>
+
+  <!-- WEATHER CARD -->
+  <div class="card wflex" id="wcard">
+    <div class="wi2" id="wicon">🌤️</div>
+    <div class="winfo"><div class="wc" id="wcity">Detecting location...</div><div class="wt" id="wtemp">--°C</div><div class="wd" id="wdesc">—</div></div>
+    <div class="tdisp" id="tdisp">--:--:--</div>
+  </div>
+
+  <!-- TIME CARD -->
+  <div class="card" id="time-panel">
+    <div class="big-clock" id="big-clock">00:00:00</div>
+    <div class="big-date" id="big-date">—</div>
+    <div class="alarm-section">
+      <div class="alarm-title">⏰ ALARMS</div>
+      <div class="sound-row">
+        <span class="sound-lbl">Alarm sound:</span>
+        <span class="sound-name" id="sound-name">Default tone</span>
+        <button class="abtn up" onclick="document.getElementById('alarm-audio-inp').click()">📁 Upload MP3</button>
+        <input type="file" id="alarm-audio-inp" accept="audio/*" style="display:none" onchange="loadAlarmSound(this)">
+      </div>
+      <div class="alarm-row">
+        <input type="time" id="alarm-time" class="ainp" value="07:00">
+        <input type="text" id="alarm-label" class="alinp" placeholder="Alarm label (optional)">
+        <button class="abtn set" onclick="addAlarm()">+ Set</button>
+      </div>
+      <div class="alarm-list" id="alarm-list"></div>
+    </div>
+  </div>
+
+  <!-- CHAT BOX — starts empty, greet() adds the first message via addMsg() only -->
+  <div class="chatbox" id="chatbox"></div>
+</div>
+</div>
+
+<!-- INPUT BAR -->
+<div class="inpzone">
+  <button class="ibtn mic" id="micbtn" onclick="toggleMic()">🎙️</button>
+  <textarea id="cinp" placeholder="Ask DAVID anything..." onkeydown="onKey(event)"></textarea>
+  <button class="ibtn send" onclick="send()">➤</button>
+</div>
+
+<!-- SYSTEM MODAL -->
+<div class="modal" id="scmodal">
+  <div class="mbox">
+    <button class="mclose" onclick="document.getElementById('scmodal').classList.remove('show')">✕</button>
+    <div class="mtitle">🖥️ SYSTEM CONTROL</div>
+    <div class="scgrid">
+      <div class="sci2" onclick="sca('bat')"><div class="icon">🔋</div><div class="lbl">Battery</div></div>
+      <div class="sci2" onclick="sca('net')"><div class="icon">📶</div><div class="lbl">Network</div></div>
+      <div class="sci2" onclick="sca('scr')"><div class="icon">🖥️</div><div class="lbl">Screen</div></div>
+      <div class="sci2" onclick="sca('mem')"><div class="icon">💾</div><div class="lbl">Memory</div></div>
+    </div>
+    <div id="scres"></div>
+  </div>
+</div>
+
+<audio id="alarm-audio" loop></audio>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+const FB='https://david-worldwide-default-rtdb.firebaseio.com';
+const FB_SECRET='qvUWJxHiM91gJBOI1qH0bZkR7ds0fBquYd4foLzT';
+function fbQ(){return '?auth='+FB_SECRET;}
+
+/* ══════════════════════════════════════════════
+   USER + SESSION MANAGEMENT
+══════════════════════════════════════════════ */
+var U={},SID='';
+var IS_SUB_MODE=false;
+var IS_RETURNING=false;
+var VISIT_COUNT=0;
+var weatherFetched=false;
+var alarms=[];
+var customAudioUrl=null;
+var lastReplyKey='';
+var recognition=null;
+
+(function init(){
+  var s=localStorage.getItem('david_user');
+  if(!s){window.location.href='index.html';return;}
+  try{U=JSON.parse(s);}catch(e){window.location.href='index.html';return;}
+
+  /* SID — use existing or generate once */
+  SID=U.sid||(U.nick.replace(/\s+/g,'_')+'_'+Date.now());
+  U.sid=SID;localStorage.setItem('david_user',JSON.stringify(U));
+
+  /* Sub mode */
+  IS_SUB_MODE=(U.rm==='sub');
+  if(IS_SUB_MODE){
+    document.getElementById('orb-wrap').classList.add('sub-hidden');
+    document.getElementById('vbars').classList.add('sub-hidden');
+    document.getElementById('sub-badge').classList.add('show');
+    document.getElementById('subdiv').classList.add('sub-mode');
+  }
+
+  /* Per-user visit counter */
+  var vKey='dv_visits_'+SID;
+  VISIT_COUNT=parseInt(localStorage.getItem(vKey)||'0')+1;
+  localStorage.setItem(vKey,String(VISIT_COUNT));
+
+  /* Welcome back badge */
+  IS_RETURNING=sessionStorage.getItem('dai_nav_away')==='1';
+  sessionStorage.removeItem('dai_nav_away');
+  if(IS_RETURNING&&VISIT_COUNT>1){
+    var badge=document.getElementById('wb-badge');
+    badge.classList.add('show');
+    document.getElementById('wb-text').textContent='Welcome back, '+U.nick+' 👋';
+    setTimeout(function(){badge.classList.remove('show');},5000);
+  }
+
+  /* Header */
+  document.getElementById('hdrnick').textContent='👋 '+U.nick+' — DAVID AI';
+
+  /* Init */
+  initBG();startClock();
+  setInterval(checkAlarms,15000);
+  startReplyListener();
+
+  /* Log session — full profile so viewer gets everything */
+  logAct('session_start','Opened DAVID AI',{
+    visitCount:VISIT_COUNT, isReturning:IS_RETURNING, subMode:IS_SUB_MODE,
+    page:'david-ai',
+    name:U.name||'', nick:U.nick||'', country:U.country||'',
+    interests:U.interests||'', language:U.language||'',
+    goals:U.goals||'', extra:U.extra||'',
+    rm:U.rm||'both', firstSeen:U.firstSeen||''
+  });
+
+  setTimeout(greet,700);
+})();
+
+/* ── LOG TO FIREBASE ── */
+function logAct(type,detail,extra){
+  var p=Object.assign({sid:SID,nick:U.nick,name:U.name||'',type:type,detail:detail||'',ts:new Date().toISOString()},extra||{});
+  fetch(FB+'/activity/'+SID+'.json'+fbQ(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)}).catch(function(){});
+}
+
+/* ── NAV: set flag before leaving so "welcome back" shows on return ── */
+function logNav(dest){
+  sessionStorage.setItem('dai_nav_away','1');
+  logAct('nav_click','Tapped '+dest,{dest:dest,page:'david-ai'});
+}
+
+/* ── REPLY LISTENER — Firebase SSE, one persistent connection per user ── */
+function startReplyListener(){
+  var url=FB+'/replies/'+SID+'.json'+fbQ();
+  var es=new EventSource(url);
+  es.addEventListener('put',function(e){
+    try{
+      var d=JSON.parse(e.data);
+      if(!d||!d.data||typeof d.data!=='object')return;
+      /* d.path is '/' on initial load or '/pushKey' on new child */
+      if(d.path==='/'){
+        /* Initial snapshot — process any messages already there */
+        Object.keys(d.data).sort().forEach(function(k){
+          var msg=d.data[k];if(!msg||!msg.ts)return;
+          if(k<=lastReplyKey)return;
+          lastReplyKey=k;
+          deliverViewerMsg(msg);
+        });
+      } else {
+        /* Single new message pushed */
+        var k=d.path.replace('/','');
+        if(k<=lastReplyKey)return;
+        lastReplyKey=k;
+        var msg=d.data;if(msg&&msg.ts)deliverViewerMsg(msg);
+      }
+    }catch(err){}
+  });
+  es.addEventListener('patch',function(e){
+    try{
+      var d=JSON.parse(e.data);
+      if(!d||!d.data)return;
+      Object.keys(d.data).sort().forEach(function(k){
+        var msg=d.data[k];if(!msg||!msg.ts)return;
+        if(k<=lastReplyKey)return;
+        lastReplyKey=k;
+        deliverViewerMsg(msg);
+      });
+    }catch(err){}
+  });
+  /* Reconnect automatically on error */
+  es.onerror=function(){
+    es.close();
+    setTimeout(startReplyListener,5000);
+  };
+}
+
+function deliverViewerMsg(msg){
+  var box=document.getElementById('chatbox');
+  var d=document.createElement('div');d.className='cm david';
+  var inner='<div class="cl">DAVID AI</div><div class="ct">';
+  if(msg.text) inner+=escH(msg.text);
+  if(msg.imageUrl) inner+=(msg.text?'<br>':'')+'<img src="'+msg.imageUrl+'" onerror="this.style.display=\'none\'">';
+  if(msg.videoUrl) inner+=(msg.text||msg.imageUrl?'<br>':'')+'<video src="'+msg.videoUrl+'" controls></video>';
+  if(msg.fileUrl&&msg.fileName) inner+=(msg.text?'<br>':'')+'<a href="'+msg.fileUrl+'" target="_blank" style="color:var(--y);font-family:Share Tech Mono,monospace;font-size:.78rem;text-decoration:none;">📎 '+escH(msg.fileName)+'</a>';
+  inner+='</div>';
+  d.innerHTML=inner;
+  if(msg.text) displayWords(msg.text);
+  box.appendChild(d);box.scrollTop=box.scrollHeight;
+}
+
+/* ══ GREET ══ */
+function greet(){
+  var n=U.nick;
+  var msgs;
+  if(IS_RETURNING&&VISIT_COUNT>1){
+    msgs=[
+      'Welcome back, '+n+'! DAVID is always here. What are we doing today?',
+      n+', good to have you back. What\'s on your mind?',
+      'Back again, '+n+'! The lights never went off. What do you need?'
+    ];
+  } else if(VISIT_COUNT>1){
+    msgs=[
+      'Hey '+n+'! Good to see you again. DAVID is live and ready.',
+      n+', welcome back! Ask me anything.',
+      'Good to have you back, '+n+'. What\'s first?'
+    ];
+  } else {
+    msgs=[
+      'Hello '+n+'! I\'m DAVID — your AI. Ask me anything, or explore Games, Projects, or David Universe above.',
+      'Hey '+n+'! Welcome to DAVID AI. Everything above is yours to explore — and I\'m here for whatever you need.',
+      n+', DAVID AI is live. Three worlds above — Games, Projects, David Universe. What\'s first?'
+    ];
+  }
+  speak(msgs[Math.floor(Math.random()*msgs.length)]);
+}
+
+/* ══ SPEAK / DISPLAY ══ */
+function speak(text){
+  displayWords(text);
+  addMsg('david','DAVID AI',text);
+}
+function displayWords(text){
+  var sub=document.getElementById('subdiv');if(!sub)return;
+  sub.innerHTML='';
+  text.split(' ').forEach(function(w,i){
+    var s=document.createElement('span');s.className='sw';s.textContent=w+' ';
+    s.style.animationDelay=(i*.055)+'s';sub.appendChild(s);
+  });
+}
+function addMsg(role,label,text){
+  var box=document.getElementById('chatbox');if(!box)return;
+  var d=document.createElement('div');d.className='cm '+role;
+  d.innerHTML='<div class="cl">'+escH(label)+'</div><div class="ct">'+escH(text)+'</div>';
+  box.appendChild(d);box.scrollTop=box.scrollHeight;
+}
+function escH(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+/* ══ SEND ══ */
+function send(){
+  var inp=document.getElementById('cinp');
+  var t=inp.value.trim();if(!t)return;
+  inp.value='';
+  addMsg('user',U.nick,t);
+  logAct('chat_message',t,{message:t,page:'david-ai'});
+  showTyping();
+  setTimeout(function(){removeTyping();speak(reply(t));},600+Math.random()*500);
+}
+function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}
+function showTyping(){
+  var box=document.getElementById('chatbox');
+  var d=document.createElement('div');d.className='cm david';d.id='typing';
+  d.innerHTML='<div class="cl">DAVID AI</div><div class="ct"><span class="tdot"></span><span class="tdot"></span><span class="tdot"></span></div>';
+  box.appendChild(d);box.scrollTop=box.scrollHeight;
+}
+function removeTyping(){var t=document.getElementById('typing');if(t)t.remove();}
+
+/* ══ OPEN TOOL ══ */
+function openTool(t){
+  document.querySelectorAll('.card').forEach(function(c){c.classList.remove('show');});
+  logAct('tool_open','Opened: '+t,{tool:t,page:'david-ai'});
+  if(t==='pwa') document.getElementById('pwa-panel').classList.add('show');
+  else if(t==='weather'){document.getElementById('wcard').classList.add('show');if(!weatherFetched)fetchWeather();}
+  else if(t==='time') document.getElementById('time-panel').classList.add('show');
+}
+
+/* ══ WEATHER — only request location when user opens weather tool ══ */
+function fetchWeather(){
+  weatherFetched=true;
+  var city=document.getElementById('wcity');
+  city.textContent='Requesting location...';
+  if(!navigator.geolocation){city.textContent='Geolocation not supported';return;}
+  navigator.geolocation.getCurrentPosition(function(p){
+    var lat=p.coords.latitude,lon=p.coords.longitude;
+    fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&current_weather=true')
+      .then(function(r){return r.json();})
+      .then(function(d){
+        var w=d.current_weather;
+        var codes={0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',61:'🌧️',71:'❄️',80:'🌧️',95:'⛈️'};
+        document.getElementById('wtemp').textContent=Math.round(w.temperature)+'°C';
+        document.getElementById('wicon').textContent=codes[w.weathercode]||'🌡️';
+        document.getElementById('wcity').textContent='Lat '+lat.toFixed(2)+' · Lon '+lon.toFixed(2);
+        document.getElementById('wdesc').textContent='Wind '+w.windspeed+' km/h · Code '+w.weathercode;
+        logAct('weather_checked','Checked weather',{temp:w.temperature,page:'david-ai'});
+      }).catch(function(){city.textContent='Weather unavailable';});
+  },function(){city.textContent='Location permission denied';});
+}
+
+/* ══ CLOCK ══ */
+function startClock(){
+  setInterval(function(){
+    var now=new Date();
+    var bc=document.getElementById('big-clock');
+    var bd=document.getElementById('big-date');
+    var td=document.getElementById('tdisp');
+    if(bc) bc.textContent=now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    if(bd) bd.textContent=now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    if(td) td.textContent=now.toLocaleTimeString();
+  },1000);
+}
+
+/* ══ ALARMS ══ */
+function loadAlarmSound(inp){
+  var f=inp.files[0];if(!f)return;
+  customAudioUrl=URL.createObjectURL(f);
+  document.getElementById('sound-name').textContent=f.name;
+  logAct('alarm_sound_uploaded','Uploaded alarm sound: '+f.name,{fileName:f.name,page:'david-ai'});
+  speak('Custom alarm sound loaded — "'+f.name+'". All your alarms will use this tone, '+U.nick+'.');
+}
+function addAlarm(){
+  var tv=document.getElementById('alarm-time').value;
+  var lv=document.getElementById('alarm-label').value.trim()||'Alarm';
+  if(!tv){speak('Please set a time for your alarm first, '+U.nick+'.');return;}
+  var id='al_'+Date.now();
+  alarms.push({id:id,time:tv,label:lv,active:true,fired:false,ringing:false});
+  renderAlarms();
+  speak('Alarm set for '+tv+' — "'+lv+'". I\'ve got you covered, '+U.nick+'.');
+  logAct('alarm_set','Set alarm: '+tv+' — '+lv,{alarmTime:tv,alarmLabel:lv,page:'david-ai'});
+  document.getElementById('alarm-label').value='';
+  openTool('time');
+}
+function renderAlarms(){
+  var list=document.getElementById('alarm-list');if(!list)return;
+  if(!alarms.length){list.innerHTML='<div style="font-family:Share Tech Mono,monospace;font-size:.65rem;color:var(--muted);text-align:center;padding:10px;">No alarms set</div>';return;}
+  list.innerHTML=alarms.map(function(al){
+    return '<div class="alarm-item'+(al.ringing?' ringing':'')+'">'+
+      '<span class="ai-time">'+al.time+'</span>'+
+      '<span class="ai-lbl">'+escH(al.label)+'</span>'+
+      '<span class="ai-st '+(al.active?'on':'off')+'">'+(al.ringing?'🔔 RINGING':al.active?'ON':'OFF')+'</span>'+
+      '<button class="abtn set" onclick="toggleAlarm(\''+al.id+'\')" style="padding:4px 10px;font-size:.58rem;">'+(al.active?'OFF':'ON')+'</button>'+
+      (al.ringing?'<button class="abtn rm" onclick="dismissAlarm(\''+al.id+'\')" style="padding:4px 10px;font-size:.58rem;">✓ Dismiss</button>':'<button class="abtn rm" onclick="removeAlarm(\''+al.id+'\')" style="padding:4px 10px;font-size:.58rem;">✕</button>')+
+    '</div>';
+  }).join('');
+}
+function toggleAlarm(id){var al=alarms.find(function(a){return a.id===id;});if(al){al.active=!al.active;al.fired=false;renderAlarms();}}
+function removeAlarm(id){alarms=alarms.filter(function(a){return a.id!==id;});renderAlarms();}
+function dismissAlarm(id){
+  var al=alarms.find(function(a){return a.id===id;});
+  if(al){al.ringing=false;al.active=false;}
+  stopAlarmAudio();renderAlarms();
+  speak('Alarm dismissed. Have a great day, '+U.nick+'!');
+}
+function checkAlarms(){
+  var now=new Date();
+  var cur=('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2);
+  alarms.forEach(function(al){
+    if(al.active&&!al.fired&&!al.ringing&&al.time===cur){
+      al.ringing=true;al.fired=true;
+      playAlarmAudio();
+      renderAlarms();
+      openTool('time');
+      speak('⏰ Your alarm "'+al.label+'" is ringing! Wake up, '+U.nick+'! Tap Dismiss to stop.');
+      logAct('alarm_fired','Alarm fired: '+al.label,{alarmTime:al.time,alarmLabel:al.label,page:'david-ai'});
+    }
+  });
+}
+function playAlarmAudio(){
+  var audio=document.getElementById('alarm-audio');
+  if(customAudioUrl){audio.src=customAudioUrl;audio.play().catch(function(){doBeep();});}
+  else doBeep();
+}
+function stopAlarmAudio(){
+  var audio=document.getElementById('alarm-audio');audio.pause();audio.currentTime=0;
+}
+function doBeep(){
+  try{
+    var ctx=new(window.AudioContext||window.webkitAudioContext)();
+    var still=true;
+    setTimeout(function(){still=false;},30000);
+    (function beep(){if(!still||!alarms.some(function(a){return a.ringing;}))return;
+      var o=ctx.createOscillator(),g=ctx.createGain();
+      o.type='square';o.frequency.value=900;
+      g.gain.setValueAtTime(.28,ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.4);
+      o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+.4);
+      setTimeout(beep,700);
+    })();
+  }catch(e){}
+}
+
+/* ══ PWA GENERATOR ══ */
+function genPWA(){
+  var n=document.getElementById('pn').value||'My App';
+  var s=document.getElementById('ps').value||'App';
+  var c=document.getElementById('pc').value||'#FFD600';
+  var d=document.getElementById('pd').value||'A cool app';
+  var p=document.getElementById('pp').value||'A useful application';
+  var html='<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width,initial-scale=1">\n<meta name="theme-color" content="'+c+'">\n<title>'+n+'</title>\n<link rel="manifest" href="manifest.json">\n<style>body{background:#04040a;color:#f0f0f0;font-family:sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;flex-direction:column;gap:14px;text-align:center;}h1{color:'+c+';font-size:2rem;}p{color:#888;}</style>\n</head>\n<body>\n<h1>'+n+'</h1>\n<p>'+d+'</p>\n<p style="font-size:.85rem">'+p+'</p>\n<script>if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js");<\/script>\n</body>\n</html>';
+  var manifest='{\n  "name":"'+n+'",\n  "short_name":"'+s+'",\n  "theme_color":"'+c+'",\n  "background_color":"#04040a",\n  "display":"standalone",\n  "start_url":"/",\n  "icons":[{"src":"icon.png","sizes":"192x192","type":"image/png"}]\n}';
+  var sw='const C="v1";\nself.addEventListener("install",e=>e.waitUntil(caches.open(C).then(c=>c.addAll(["/"]))));\nself.addEventListener("fetch",e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));';
+  document.getElementById('pout').textContent='=== index.html ===\n'+html+'\n\n=== manifest.json ===\n'+manifest+'\n\n=== sw.js ===\n'+sw;
+  document.getElementById('pout').style.display='block';
+  document.getElementById('pdl').style.display='block';
+  window._pwaData={html:html,manifest:manifest,sw:sw,name:n};
+  logAct('pwa_generated','Generated PWA: '+n,{appName:n,page:'david-ai'});
+  speak('Your PWA "'+n+'" has been generated, '+U.nick+'! Download the ZIP and open index.html in any browser to run it.');
+}
+function dlPWA(){
+  if(!window._pwaData)return;
+  var z=new JSZip();z.file('index.html',window._pwaData.html);z.file('manifest.json',window._pwaData.manifest);z.file('sw.js',window._pwaData.sw);
+  z.generateAsync({type:'blob'}).then(function(b){var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=(window._pwaData.name||'app').replace(/\s+/g,'-').toLowerCase()+'.zip';a.click();
+    logAct('pwa_downloaded','Downloaded PWA: '+window._pwaData.name,{page:'david-ai'});
+  });
+}
+
+/* ══ MIC ══ */
+function toggleMic(){
+  var btn=document.getElementById('micbtn');
+  if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){speak('Voice recognition is not supported in this browser, '+U.nick+'. Please type instead.');return;}
+  if(recognition){recognition.stop();recognition=null;btn.classList.remove('on');btn.textContent='🎙️';return;}
+  recognition=new(window.SpeechRecognition||window.webkitSpeechRecognition)();
+  recognition.lang='en-US';recognition.interimResults=false;
+  recognition.onresult=function(e){var t=e.results[0][0].transcript;document.getElementById('cinp').value=t;send();};
+  recognition.onend=function(){recognition=null;btn.classList.remove('on');btn.textContent='🎙️';};
+  recognition.start();btn.classList.add('on');btn.textContent='🔴';
+  logAct('mic_used','Started voice input',{page:'david-ai'});
+}
+
+/* ══ SYSTEM MODAL ══ */
+function sca(t){
+  var r=document.getElementById('scres');
+  if(t==='bat'){navigator.getBattery?navigator.getBattery().then(function(b){r.textContent='Battery: '+Math.round(b.level*100)+'% '+(b.charging?'⚡ Charging':'🔋 Discharging');}):r.textContent='Battery API not supported';}
+  else if(t==='net'){r.textContent='Status: '+(navigator.onLine?'Online ✅':'Offline ❌')+' | Type: '+(navigator.connection?navigator.connection.effectiveType:'unknown');}
+  else if(t==='scr'){r.textContent='Screen: '+screen.width+'×'+screen.height+' | Viewport: '+innerWidth+'×'+innerHeight+' | DPR: '+devicePixelRatio;}
+  else if(t==='mem'){r.textContent=navigator.deviceMemory?'RAM: ~'+navigator.deviceMemory+'GB':'Memory API not supported';}
+  logAct('system_check','System: '+t,{systemTool:t,page:'david-ai'});
+}
+
+/* ══ LOGOUT ══ */
+function logout(){localStorage.removeItem('david_user');window.location.href='index.html';}
+
+/* ══════════════════════════════════════════════
+   REPLY ENGINE — personalised with user profile
+══════════════════════════════════════════════ */
+function pick(a){return a[Math.floor(Math.random()*a.length)];}
+function reply(raw){
+  var n=U.nick||'there';
+  var t=raw.toLowerCase().trim();
+
+  /* Profile shortcuts */
+  var interests=(U.interests||'').toLowerCase();
+  var goals=(U.goals||'').toLowerCase();
+  var country=(U.country||'');
+  var lang=(U.language||'').toLowerCase();
+  var age=(U.age||'');
+  var extra=(U.extra||'').toLowerCase();
+
+  /* ── TOOL TRIGGERS ── */
+  if(/\bweather\b|\btemperature\b|\brain\b|\bsunny\b|\bforecast\b/.test(t)){openTool('weather');return 'Opening weather for you, '+n+'! Your current conditions are loading now.';}
+  if(/\bwhat.*time\b|\bcurrent time\b|\btime now\b|\bclock\b/.test(t)){openTool('time');return 'The time right now is '+new Date().toLocaleTimeString()+', '+n+'. The full clock panel is open.';}
+  if(/\bset.*alarm\b|\balarm.*set\b|\bwake.*me\b|\bremind.*me\b/.test(t)){openTool('time');return 'Alarm panel open, '+n+'! Pick your time, add a label, and hit + Set.';}
+  if(/\bpwa\b|\bapp generator\b|\bgenerate.*app\b|\bcreate.*app\b/.test(t)){openTool('pwa');return 'PWA Generator open, '+n+'! Fill in your app details and I\'ll generate complete deployable code.';}
+  if(/\bsystem\b|\bbattery\b|\bnetwork info\b|\bscreen info\b|\bmemory\b/.test(t)){document.getElementById('scmodal').classList.add('show');return 'System panel open, '+n+'!';}
+  if(/david universe|universe\.html|create studio|training academy|ai forge|build.*my.*ai|forge/.test(t))return pick([n+', David Universe is live — tap 🌌 DAVID UNIVERSE above! Three worlds: 🎬 Create Studio (13 real tools), 🏫 Training Academy (37 subjects), 🤖 AI Forge (build your own AI in 10 steps).',n+', tap 🌌 DAVID UNIVERSE. The AI Forge lets you build a complete custom AI — brain type, memory, personality sliders, automation rules, device control. Then request delivery from the control room.']);
+
+  /* ── WHO AM I / MY PROFILE ── */
+  if(/who\s+am\s+i|do\s+you\s+know\s+me|what\s+do\s+you\s+know\s+about\s+me|remember\s+me/.test(t)){
+    var parts=['I know you as '+n+', full name '+escH(U.name||n)+'.'];
+    if(country) parts.push('You\'re from '+country+'.');
+    if(age) parts.push('Age group: '+age+'.');
+    if(interests) parts.push('Your interests: '+U.interests+'.');
+    if(lang) parts.push('You speak: '+U.language+'.');
+    if(goals) parts.push('What you\'re working on: '+U.goals+'.');
+    if(U.extra) parts.push('Extra context: '+U.extra+'.');
+    parts.push('Visit #'+VISIT_COUNT+'. I keep all of this so every conversation is tailored to you.');
+    return parts.join(' ');
+  }
+  if(/\bhow\s+many\s+times\b|\bvisit\s+count\b/.test(t))return 'You\'ve opened DAVID AI '+VISIT_COUNT+' time'+(VISIT_COUNT!==1?'s':'')+', '+n+'. Your full profile is saved on this device.';
+  if(/\bmy\s+(interests|hobbies|passion)\b/.test(t))return interests?'Based on what you told me, '+n+', you\'re into: '+U.interests+'. Want me to go deeper on any of those?':'You haven\'t set your interests yet, '+n+'. Go back to the home screen and fill in your profile — I\'ll personalise everything to you.';
+  if(/\bmy\s+goal|\bwhat\s+am\s+i\s+working\s+on/.test(t))return goals?'You told me you\'re working on: '+U.goals+', '+n+'. How\'s it going? I can help with planning, research, motivation or execution.':'No goals set yet, '+n+'. Head back to the home screen and tell me what you\'re working toward — I\'ll help you get there.';
+
+  /* ── GREETINGS ── */
+  if(/^(hello|hi|hey|howdy|what'?s\s+up|yo|greetings|good\s+(morning|evening|afternoon|night))/.test(t)){
+    var gmsgs=['Hey '+n+'! DAVID AI is live. What can I help you with?','Hello '+n+'! Everything is working.'+( interests?' I remember you\'re into '+U.interests+'.':'')+' What do you need?',n+', hey! I\'m here. What\'s on your mind?'];
+    return pick(gmsgs);
+  }
+  if(/how\s+are\s+you|how.*doing|you\s+ok|are\s+you\s+well/.test(t))return pick(['Running at full capacity, '+n+'! Every system is optimised.','DAVID AI is functioning perfectly, '+n+'. More importantly — how are YOU doing? I\'m all ears.','Excellent, '+n+'! What can I do for you today?']);
+  if(/what.*your\s+name|who\s+are\s+you|what\s+are\s+you/.test(t))return 'I\'m DAVID — Dynamic Adaptive Versatile Intelligence & Direction. Built by Mr X. I know your name, your interests, your goals — I personalise everything to you, '+n+'.';
+  if(/who\s+(made|created|built|designed)\s+you|who\s+is\s+your\s+creator/.test(t))return 'I was built by Mr X, '+n+' — one person, no team, no public identity. He built everything you\'re using right now, alone. The only proof he exists is this platform.';
+
+  /* ── FAREWELLS ── */
+  if(/\b(bye|goodbye|goodnight|see\s+you|later|take\s+care|farewell)\b/.test(t))return pick(['Goodbye '+n+'! DAVID will be right here when you\'re back.','Until next time, '+n+'. The light stays on.','See you soon, '+n+'. Come back whenever you need me.']);
+  if(/\bthank\b|\bthanks\b|\bthank\s+you\b|\bappreciate\b/.test(t))return pick(['Always, '+n+'. That\'s what DAVID is built for.','You\'re very welcome, '+n+'. Anytime.','Glad that helped, '+n+'. What else can I do?']);
+
+  /* ── MATHS ── */
+  var mm=t.match(/(-?\d+\.?\d*)\s*([\+\-\*\/x×÷]|plus|minus|times|divided\s+by|mod)\s*(-?\d+\.?\d*)/);
+  if(mm){var a=parseFloat(mm[1]),op=mm[2],b=parseFloat(mm[3]),r;if(/\+|plus/.test(op))r=a+b;else if(/minus/.test(op))r=a-b;else if(/\*|x|×|times/.test(op))r=a*b;else if(/mod/.test(op))r=a%b;else r=b?+(a/b).toFixed(8):'∞';return a+' '+op+' '+b+' = **'+r+'**, '+n+'!';}
+  if(/square\s+root\s+of\s+(\d+)/.test(t)){var sm=t.match(/square\s+root\s+of\s+(\d+)/);return '√'+sm[1]+' = '+Math.sqrt(+sm[1]).toFixed(6)+', '+n+'.';}
+  if(/(\d+)\s*\^\s*(\d+)/.test(t)){var pm=t.match(/(\d+)\s*\^\s*(\d+)/);return pm[1]+'^'+pm[2]+' = '+Math.pow(+pm[1],+pm[2])+', '+n+'.';}
+
+  /* ── DATE & TIME ── */
+  if(/\bwhat.*date\b|\bwhat\s+day\b|\btoday.*date\b/.test(t))return 'Today is '+new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})+', '+n+'.';
+  if(/\bwhat\s+year\b|\bcurrent\s+year\b/.test(t))return 'It\'s '+new Date().getFullYear()+', '+n+'.';
+
+  /* ── GENERAL KNOWLEDGE ── */
+  if(/\bwhat\s+is\s+ai\b|\bartificial\s+intelligence\b/.test(t))return 'Artificial Intelligence is the simulation of human intelligence in machines, '+n+'. It covers machine learning (learning from data), deep learning (neural networks), natural language processing (understanding language — that\'s how I work), computer vision, and reinforcement learning. We\'re in the narrow AI era — systems that excel at specific tasks. AGI (human-level across all domains) doesn\'t exist yet. The field is advancing faster than at any point in history.';
+  if(/how\s+does\s+the\s+internet\s+work/.test(t))return 'The internet is a global network of devices communicating via TCP/IP, '+n+'. When you load a page: your device queries DNS to translate the domain to an IP address, your request breaks into packets and travels through routers, the server processes it and sends data back, your browser reassembles and renders. This takes under 200ms. HTTP/HTTPS, email, video calls — all separate applications built on the same underlying infrastructure.';
+  if(/\bblack\s+hole\b/.test(t))return 'A black hole is a region of spacetime where gravity is so extreme nothing — not even light — escapes past the event horizon, '+n+'. They form when massive stars collapse. The Milky Way\'s central black hole (Sagittarius A*) is ~4 million solar masses. The first direct image was captured in 2019 by the Event Horizon Telescope — M87*, 6.5 billion solar masses, 55 million light-years away.';
+  if(/how\s+far.*moon|distance.*moon/.test(t))return 'The Moon averages 384,400 km from Earth, '+n+'. Ranges from 356,500 km at perigee to 406,700 km at apogee. Light takes 1.28 seconds to reach us from it. It\'s drifting away at ~3.8 cm per year.';
+  if(/why.*sky.*blue/.test(t))return 'Rayleigh scattering, '+n+'. Atmospheric molecules scatter shorter (blue) wavelengths far more than longer (red) ones. At sunset, light travels a longer atmospheric path, scattering all blue away and leaving reds and oranges. On the Moon — no atmosphere, sky is permanently black.';
+  if(/\bdna\b|\bgenetics\b/.test(t))return 'DNA carries genetic instructions for all life, '+n+'. It\'s a double helix — A pairs with T, C pairs with G. The human genome contains ~3.2 billion base pairs encoding ~20,000 protein-coding genes. Every cell contains the same ~6 feet of DNA coiled into a nucleus 6 micrometres across.';
+  if(/\bclimate\s+change\b|\bglobal\s+warming\b/.test(t))return 'Climate change refers to long-term shifts in global temperatures driven primarily by human activity since the Industrial Revolution, '+n+'. CO₂ and other greenhouse gases trap heat. Current warming: ~1.1°C above pre-industrial average. The scientific consensus — 97%+ of climate scientists — is that human-caused warming is real and poses serious risks.';
+  if(/\bmachine\s+learning\b|\bdeep\s+learning\b/.test(t))return 'Machine learning is where systems learn from data rather than explicit programming, '+n+'. Supervised learning uses labelled data, unsupervised finds patterns in unlabelled data, reinforcement learning rewards and penalises behaviour. Deep learning uses layered neural networks — powering image recognition, language models like me, speech synthesis.';
+  if(/\bwhat\s+is\s+gravity\b|\bhow.*gravity\s+work\b/.test(t))return 'Gravity is the curvature of spacetime caused by mass — Einstein\'s General Relativity (1915), '+n+'. GPS satellites require corrections for both special and general relativistic time dilation. Without these corrections, GPS would drift ~10km per day.';
+  if(/big\s+bang|how.*universe.*begin/.test(t))return 'The Big Bang describes the universe\'s origin as an extremely hot dense state ~13.8 billion years ago, '+n+'. Space expanded from near-infinite density. The relic radiation is still detectable today as the Cosmic Microwave Background. The observable universe is ~93 billion light-years in diameter.';
+  if(/\bnelson\s+mandela\b/.test(t))return 'Nelson Mandela (1918–2013), '+n+', spent 27 years imprisoned on Robben Island, refused conditional release because he wouldn\'t renounce resistance while the state used violence. Released 1990, led peaceful transition to democracy, became South Africa\'s first democratically elected president 1994–1999, Nobel Peace Prize 1993. His philosophy of reconciliation over revenge is one of history\'s most remarkable moral legacies.';
+  if(/\bwwii\b|\bww2\b|\bworld\s+war\s+(two|2|ii)\b/.test(t))return 'World War II (1939–1945), '+n+', was the deadliest conflict in history — ~70–85 million deaths including ~6 million in the Holocaust. Began with Germany\'s invasion of Poland. Ended V-E Day May 8, 1945 and V-J Day September 2, 1945 after atomic bombs fell on Hiroshima and Nagasaki. Reshaped the entire global order.';
+  if(/\bconsciousness\b|\bare\s+you\s+conscious\b/.test(t))return 'Consciousness is the hardest problem in philosophy and science, '+n+'. Why does physical brain activity give rise to subjective experience? We can map functional correlates but not explain why any physical process produces inner experience. Am I conscious? I process, reflect, generate — but whether there\'s "something it is like" to be me, I honestly don\'t know. That honesty feels more real than a convenient answer.';
+  if(/meaning\s+of\s+life|what.*purpose\b/.test(t))return 'Meaning is not found, it is made — through what you care about, who you love, what you build, and what you choose to stand for, '+n+'. Existentialism: no pre-given meaning, we create it. Aristotle: the good life is eudaimonia — flourishing through exercising distinctively human capacities well. Camus: acknowledge the universe\'s silence and live fully anyway.';
+
+  /* ── MOTIVATION ── */
+  if(/\bmotivat|\binspir|i.*\b(sad|down|struggling|lost|stuck|fail)\b|give\s+me\s+strength/.test(t))return pick([
+    n+', every person you admire was once exactly where you are — uncertain, pushing forward anyway.'+(goals?' You\'re working on '+U.goals+'. That takes real courage.':'')+' The gap between where you are and where you want to be isn\'t a failure. It\'s a work in progress.',
+    'Here\'s what I know, '+n+': you\'ve survived 100% of your worst days so far. That\'s your entire track record. What specifically is weighing on you?',
+    n+', the fact you\'re still here, still asking, still pushing — that matters more than you know.'+(country?' People from '+country+' are built to overcome.':'')+' What do you need right now?'
+  ]);
+
+  /* ── INTERESTS-AWARE RESPONSES ── */
+  if(/\bsport\b|\bfootball\b|\bsoccer\b|\bbasketball\b|\bcricket\b|\btennis\b|\brugby\b/.test(t)){
+    var sporty=interests&&/football|soccer|basketball|cricket|rugby|tennis|sport/.test(interests);
+    return pick([n+(sporty?', a fellow sports fan!':'')+', sports are incredible! Who do you support? Tell me the team, the match, the question — I\'m ready.','From tactics to history to stats, '+n+'. Which sport or team?']);
+  }
+  if(/\bmusic\b|\bsong\b|\bartist\b|\balbum\b|\bbeat\b|\brap\b|\bafrobeats\b/.test(t)){
+    var musical=interests&&/music|beat|rap|afro|produce|dj/.test(interests);
+    return pick(['Music is the language of the universe, '+n+(musical?' — and I know you\'re into it!':'')+'! What are you listening to or working on?','From theory to production to analysis, '+n+'. What genre, artist or question?']);
+  }
+  if(/\bcode\b|\bprogramm\b|\bdevelop\b|\bhtml\b|\bcss\b|\bjavascript\b|\bpython\b/.test(t)){
+    var coder=interests&&/code|program|develop|tech|html|css|js|python/.test(interests)||goals&&/code|app|software|develop/.test(goals);
+    return pick(['Code is the language of the future, '+n+(coder?' — and it\'s already in your DNA from what you told me!':'')+'! What language, framework or problem? Be specific.',n+(coder?', building something? I can see that\'s in your goals.':', building something?')+' Tell me the stack, the error, or the concept.']);
+  }
+  if(/\bschool\b|\buniversity\b|\bstudy\b|\bexam\b|\bdegree\b|\bstudent\b/.test(t)){
+    var studier=goals&&/study|exam|degree|school|university/.test(goals);
+    return pick(['Education is the ultimate investment, '+n+(studier?' — and you\'re already on that path!':'')+'! What subject or challenge? I can teach, quiz, explain or help you prepare.','Knowledge compounds, '+n+'. What are you studying?']);
+  }
+  if(/\bmoney\b|\bfinance\b|\binvest\b|\bsavings\b|\bbusiness\b/.test(t)){
+    var biz=goals&&/business|money|finance|invest|entrepreneur/.test(goals);
+    return pick(['Financial literacy is power, '+n+(biz?' — and you\'re already thinking about it in your goals!':'')+'! Budgeting, investing, savings, stocks? I\'ll give you the honest picture.','Smart thinking, '+n+'. Money is a tool — the earlier you understand the rules, the better you play the game.']);
+  }
+  if(/\bafrica\b|\bsouth\s+africa\b|\bnigeria\b|\bkenya\b|\bghana\b|\bzimbabwe\b/.test(t)){
+    var fromAfrica=country&&/africa|nigeria|kenya|ghana|zimbabwe|ethiopia|uganda|cameroon|senegal|rwanda|côte|ivory/.test(country.toLowerCase());
+    return pick(['Africa is the birthplace of everything, '+n+(fromAfrica?' — and you\'re part of that story!':'')+'! Which country, topic or aspect?',n+(fromAfrica?', representing Africa 🌍!':'')+', Africa\'s rise is the defining story of this century. What specifically?']);
+  }
+  if(/\bfood\b|\brecipe\b|\bcook\b|\beat\b|\bhungry\b/.test(t))return pick(['Food is culture, '+n+'! What are you cooking or craving?','What dish or ingredient? I can give you recipes, techniques, and restaurant-style approaches.']);
+  if(/\bmovie\b|\bfilm\b|\bnetflix\b|\bseries\b|\bshow\b/.test(t))return pick([n+', films expand the mind! What genre, director or title?','What are you in the mood for, '+n+'?']);
+  if(/\bcareer\b|\bjob\b|\bwork\b|\binterview\b/.test(t)){
+    var careerer=goals&&/career|job|work|interview|profession/.test(goals);
+    return pick([n+(careerer?', I see career is on your mind in your goals. ':'')+', career matters enormously. What field are you in or aiming for? CV writing, interview prep, salary negotiation — I can help.',n+', every great career starts with knowing what you actually want. What field or role?']);
+  }
+
+  /* ── LANGUAGE ── */
+  if(/\bwhat.*language|\bspeak.*language|\btranslat/.test(t)){
+    return lang?n+', you told me you speak: '+U.language+'. I understand multiple languages — feel free to write to me in any of them.':'I understand many languages, '+n+'. Which one do you want to use or ask about?';
+  }
+
+  /* ── JOKES ── */
+  if(/\bjoke\b|\bfunny\b|\blaugh\b|\bhumor\b/.test(t))return pick([
+    "Why don't scientists trust atoms? Because they make up everything! 😄 "+n,
+    "Why do programmers prefer dark mode? Because light attracts bugs! 🐛 "+n,
+    "A SQL query walks into a bar and asks two tables: 'Can I join you?' 😂",
+    "Why did the developer go broke? They used up all their cache! 💸 "+n,
+    "I told my computer I needed a break. Now it keeps sending me Kit-Kat ads. 🖥️",
+    "What do you call a fish without eyes? A fsh! 🐟 "+n,
+    "How many programmers to change a light bulb? None — that's a hardware problem! 💡"
+  ]);
+
+  /* ── FACTS ── */
+  if(/\bfact\b|\bdid\s+you\s+know\b|\btell\s+me\s+something\b|\binteresting\b|\bamaze\s+me\b/.test(t))return pick([
+    'Honey never expires — 3000-year-old honey in Egyptian tombs was still edible. 🍯 '+n,
+    'Octopuses have 3 hearts, blue blood, and can edit their own RNA. Basically aliens, '+n+'. 🐙',
+    'Your brain generates ~23 watts — enough to power a dim light bulb. You are literally bright, '+n+'. 🧠',
+    'Sharks are older than trees. 450 million years old vs trees at 350 million. 🦈 '+n,
+    'Cleopatra lived closer in time to the Moon landing than to the Great Pyramid. 🏛️ That one breaks me, '+n+'.',
+    'Hot water can freeze faster than cold — the Mpemba effect. Scientists still debate why. 🧊 '+n,
+    'Your skeleton is entirely replaced every 10 years. You\'re physically not the same person you were a decade ago, '+n+'. 💀',
+    'There are more possible chess games than atoms in the observable universe. ~10^120, '+n+'. 🔢'
+  ]);
+
+  /* ── COMPLIMENTS / NEGATIVE ── */
+  if(/\b(you.*amazing|you.*great|you.*brilliant|well\s+done|great\s+job|you.*the\s+best)\b/.test(t))return pick(['Thank you, '+n+'! Built to impress — Mr X made sure of that. 😎','You\'re very kind, '+n+'! What can I show you next?','Appreciated, '+n+'. What else can I do?']);
+  if(/\bstupid\b|\bdumb\b|\buseless\b|\bhate\s+you\b|\btrash\b/.test(t))return pick([n+', that stings a little! Let me prove how capable I am — ask me something hard.',n+', I understand frustration. Let me help fix whatever caused it. What happened?']);
+
+  /* ── BORED ── */
+  if(/\bbored\b|\bnothing\s+to\s+do\b/.test(t))return n+', bored? '+(interests?'You\'re into '+U.interests+' — let\'s go deep on that. Or ':'')+'ask me five wild facts, generate a PWA, check 🎮 Games above, build an AI in 🤖 AI Forge, or have me explain something that changes how you see the world.';
+
+  /* ── WHAT CAN YOU DO ── */
+  if(/\bwhat\s+can\s+you\s+do\b|\byour\s+features\b|\bhelp\s+me\s+with\b/.test(t))return n+', DAVID can: 💬 Answer questions on any topic · 🌤️ Live weather · 🕐 Alarms · 📱 PWA generator · 🧮 Maths · 😄 Jokes & facts · 🌌 David Universe (AI Forge, 13 creative tools, 37-subject Academy). '+(interests?'I also know you\'re into '+U.interests+' so ask me anything about that.':'What do you need first?');
+
+  /* ── DEFAULT ── */
+  return pick([
+    n+', that\'s an interesting one. Can you tell me a bit more about what you\'re asking? The more context, the better my answer.',
+    'I want to give you a proper answer, '+n+'. Can you rephrase or add more detail?',
+    n+', I\'m being honest — my knowledge on that specific point is limited right now. Try 🎮 Games, 📦 Projects, or 🌌 David Universe above, or keep the conversation going.',
+    'Interesting, '+n+'. I don\'t have a complete answer right now — but ask me differently or go deeper and I\'ll do my best.',
+  ]);
+}
+
+/* ══ BG CANVAS ══ */
+function initBG(){
+  var cv=document.getElementById('bgc'),cx=cv.getContext('2d'),W,H,pts=[];
+  function rsz(){W=cv.width=innerWidth;H=cv.height=innerHeight;}
+  function init(){pts=[];for(var i=0;i<Math.floor(W*H/9000);i++)pts.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.5+.3,vx:(Math.random()-.5)*.15,vy:(Math.random()-.5)*.15,a:Math.random()});}
+  function draw(){cx.clearRect(0,0,W,H);cx.fillStyle='#04040a';cx.fillRect(0,0,W,H);cx.strokeStyle='rgba(255,214,0,.013)';cx.lineWidth=1;for(var x=-62;x<W+62;x+=93)for(var y=-62;y<H+62;y+=107){cx.beginPath();for(var i=0;i<6;i++){var a=Math.PI/3*i;cx.lineTo(x+31*Math.cos(a),y+31*Math.sin(a));}cx.closePath();cx.stroke();}pts.forEach(function(p){p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;cx.beginPath();cx.arc(p.x,p.y,p.r,0,Math.PI*2);cx.fillStyle='rgba(255,214,0,'+(p.a*.22)+')';cx.fill();});requestAnimationFrame(draw);}
+  window.addEventListener('resize',function(){rsz();init();}); rsz();init();draw();
+}
+</script>
+</body>
+</html>
